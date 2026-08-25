@@ -1,0 +1,4 @@
+import { ResearchShell, PageIntro, ArtifactGrid } from '@/components/research-shell'
+import { ApproachDiagram } from '@/components/approach-diagram'
+import { diagrams } from '@/components/diagram-data'
+export default function DocsPage(){return <ResearchShell active="Docs"><div className="container"><PageIntro eyebrow="07 / Docs" title="A shared research notebook." copy="Methods, assumptions, and next questions belong beside the interface—not hidden in a handoff."/><ApproachDiagram src={diagrams.features} alt="Feature extraction diagram describing mel spectrogram and MFCC branches, normalization, channel dimension, and final tensor." title="Feature extraction method"/><ArtifactGrid items={[{title:'Getting started',text:'Understand the recording and inference flow.'},{title:'Method notes',text:'Read the choices behind preprocessing and labels.'},{title:'Limitations',text:'Know what this prototype cannot establish.'}]}/></div></ResearchShell>}

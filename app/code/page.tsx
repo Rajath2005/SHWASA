@@ -1,0 +1,5 @@
+import { ResearchShell, PageIntro, ArtifactGrid } from '@/components/research-shell'
+import { ApproachDiagram } from '@/components/approach-diagram'
+import { diagrams } from '@/components/diagram-data'
+import { CopdDetectionLab } from '@/components/copd-detection-lab'
+export default function CodePage(){return <ResearchShell active="Code"><div className="container"><PageIntro eyebrow="06 / Code" title="Built to be followed." copy="The project keeps its experimental seams visible: preprocessing, training, evaluation, and inference are separate surfaces."/><CopdDetectionLab/><ApproachDiagram src={diagrams.training} alt="Two-stage optimization training process showing environment preparation, frozen-backbone training, fine-tuning, and optimization hooks." title="Two-stage network training"/><ArtifactGrid items={[{title:'Repository',text:'Source code, setup notes, and experiment history.',href:'https://github.com/Rajath2005/copd'},{title:'Notebook',text:'Explore feature extraction and model behavior.'},{title:'Inference API',text:'A small interface for repeatable predictions.'}]}/></div></ResearchShell>}
