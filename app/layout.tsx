@@ -37,6 +37,8 @@ export const viewport: Viewport = {
   ],
 }
 
+import { PageTransition } from '@/components/page-transition'
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,7 +48,7 @@ export default function RootLayout({
     <html lang="en" data-theme="system" data-scroll-behavior="smooth" className={`${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var p=JSON.parse(localStorage.getItem('pulmo-preferences')||'null');var t=localStorage.getItem('pulmo-theme')||p?.theme||'system';var r=localStorage.getItem('pulmo-reduced-motion')==='true'||p?.reduced===true;document.documentElement.dataset.theme=t;document.documentElement.dataset.reducedMotion=String(r)}catch(e){}})()` }} /></head>
       <body className="antialiased" suppressHydrationWarning>
-        {children}
+        <PageTransition>{children}</PageTransition>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

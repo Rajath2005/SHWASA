@@ -37,7 +37,7 @@ export default function Page() {
       <section id="top" className="hero shell">
         <div className="hero-copy">
           <p className="eyebrow"><span className="status-dot" /> Open respiratory-sound research <span className="eyebrow-line" /></p>
-          <h1>Listen closer.<br /><em>Detect earlier.</em></h1>
+          <h1>Listen closer.<br /><em className="premium-gradient">Detect earlier.</em></h1>
           <p className="hero-text">A machine-learning toolkit for identifying COPD-related respiratory sounds — designed to make clinical audio more legible, one breath at a time.</p>
           <div className="hero-actions"><a className="button primary" href="#try">Explore the model <Arrow /></a><a className="text-link" href="#approach">Read the research <span>↓</span></a></div>
           <div className="hero-notes"><span><b>01</b> Audio-first</span><span><b>02</b> Research-grade</span><span><b>03</b> Open by design</span></div>
