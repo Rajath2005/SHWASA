@@ -96,7 +96,7 @@ export default function DashboardPage() {
               <h2 className="text-lg font-semibold tracking-tight text-[var(--foreground)]">Recent Inferences</h2>
               <p className="text-xs text-[var(--muted)] mt-1">Illustrative local history until persistence is connected</p>
             </div>
-            <button className="text-[11px] font-mono text-[var(--teal)] hover:underline">View All →</button>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)]">Local sample</span>
           </div>
           <RecentInferencesTable />
         </div>
