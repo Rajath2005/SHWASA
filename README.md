@@ -27,6 +27,14 @@ Then, run the development server:
 pnpm dev
 ```
 
+To connect the playground and dashboard to the COPD-EFF Express service, set the server-only API origin before starting Next.js:
+
+```bash
+COPD_EFF_API_URL=http://localhost:3001 pnpm dev
+```
+
+Next.js keeps browser requests same-origin at `/api/*` and rewrites them to the configured COPD-EFF service. Without this variable, the app remains in its local demonstration mode.
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
 ## Project Structure

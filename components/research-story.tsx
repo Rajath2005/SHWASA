@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { getModelTrack, type ModelTrack } from '@/lib/model-registry'
 
 const chapters = [
   { id: '01', title: 'The question', tag: 'WHY THIS MATTERS', heading: 'Can a breath carry a clinical signal?', copy: 'COPD screening often begins with equipment, appointments, and effort. This project explores whether the sound of breathing can become a more accessible research signal.', input: 'A short respiratory recording', output: 'A measurable acoustic trace', color: 'teal' },
@@ -21,25 +22,45 @@ function ChapterVisual({ chapter }: { chapter: number }) {
 export function ResearchStory() {
   const [chapter, setChapter] = useState(0)
   const [playing, setPlaying] = useState(true)
+  const [focused, setFocused] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
+  const [track, setTrack] = useState<ModelTrack>('copd-eff')
   const active = chapters[chapter]
+  const model = getModelTrack(track)
 
-  useEffect(() => { if (!playing) return; const timer = window.setInterval(() => setChapter((current) => (current + 1) % chapters.length), 3600); return () => window.clearInterval(timer) }, [playing])
+  useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReducedMotion(preference.matches || document.documentElement.dataset.reducedMotion === 'true')
+    const onVisibility = () => { if (document.hidden) setPlaying(false) }
+    update()
+    preference.addEventListener('change', update)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      preference.removeEventListener('change', update)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [])
+  useEffect(() => {
+    if (!playing || focused || reducedMotion) return
+    const timer = window.setInterval(() => setChapter((current) => (current + 1) % chapters.length), 3600)
+    return () => window.clearInterval(timer)
+  }, [focused, playing, reducedMotion])
 
   return <main className="research-story">
-    <div className="story-topline"><span><i /> MAJOR PROJECT / FRONTEND RESEARCH STORY</span><span>DOCUMENTATION MODE / 2026</span></div>
+    <div className="story-topline"><span><i /> MAJOR PROJECT / FRONTEND RESEARCH STORY</span><span>DOCUMENTATION MODE / 2026</span><div className="story-track-switcher" role="tablist" aria-label="Research model track"><button role="tab" aria-selected={track === 'copd-eff'} className={track === 'copd-eff' ? 'active' : ''} onClick={() => setTrack('copd-eff')}>COPD-EFF</button><button role="tab" aria-selected={track === 'copd-mod2'} className={track === 'copd-mod2' ? 'active' : ''} onClick={() => setTrack('copd-mod2')}>copd-mod2</button></div></div>
     <section className="story-hero">
       <div><p className="tiny-label">SHWASA / Project narrative</p><h1>The sound of<br /><em>breathing,</em><br />made legible.</h1><p className="story-lede">An interactive visual account of a respiratory sound research project — from the question we asked to the evidence we measured.</p><div className="story-actions"><a className="button primary" href="#journey">Explore the story <span>↓</span></a><button className="text-button" onClick={() => setPlaying(!playing)}>{playing ? 'Pause story' : 'Play story'} <span>{playing ? 'Ⅱ' : '▶'}</span></button></div></div>
       <div className="hero-field" aria-label="Animated respiratory signal visualization"><div className="hero-grid" />{bars.map((height, index) => <i key={index} style={{ height: `${height}%`, animationDelay: `${index * -0.08}s` }} />)}<strong>RESPIRATORY SOUND / SIGNAL 001</strong><span className="hero-crosshair">+<small>INPUT</small></span></div>
     </section>
     <section className="story-statement"><span className="story-index">01—04</span><p>We are not presenting a diagnosis. We are making the research process visible: the data, transformations, architecture, and evaluation choices behind an experimental screening workflow.</p></section>
     <section id="journey" className="story-journey">
-      <div className="story-rail">{chapters.map((item, index) => <button key={item.id} className={index === chapter ? 'active' : ''} onClick={() => setChapter(index)} aria-current={index === chapter ? 'step' : undefined}><span>{item.id}</span><b>{item.title}</b><small>{index === chapter ? 'NOW EXPLORING' : 'OPEN CHAPTER'}</small></button>)}</div>
-      <div className={`story-chapter ${active.color}`} key={active.id}>
+      <div className="story-rail" onFocus={() => setFocused(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false) }}>{chapters.map((item, index) => <button key={item.id} className={index === chapter ? 'active' : ''} onClick={() => { setChapter(index); setPlaying(false) }} aria-current={index === chapter ? 'step' : undefined}><span>{item.id}</span><b>{item.title}</b><small>{index === chapter ? 'NOW EXPLORING' : 'OPEN CHAPTER'}</small></button>)}</div>
+      <div className={`story-chapter ${active.color}`} key={`${active.id}-${track}`}>
         <div className="chapter-visual"><ChapterVisual chapter={chapter} /><div className="chapter-number">{active.id}</div></div>
-        <div className="chapter-copy"><p className="tiny-label">{active.tag}</p><h2>{active.heading}</h2><p>{active.copy}</p><div className="chapter-io"><div><small>INPUT</small><b>{active.input}</b></div><span>→</span><div><small>OUTPUT</small><b>{active.output}</b></div></div><div className="chapter-controls"><button className="text-button" onClick={() => setChapter((chapter - 1 + chapters.length) % chapters.length)}>← Previous</button><span>{active.id} / 04</span><button className="button primary" onClick={() => setChapter((chapter + 1) % chapters.length)}>Next chapter <span>→</span></button></div></div>
+        <div className="chapter-copy" aria-live="polite"><p className="tiny-label">{active.tag} · {model.shortName}</p><h2>{active.heading}</h2><p>{track === 'copd-mod2' && chapter === 3 ? 'The four-class sound-event output is evaluated separately from binary COPD screening. These complementary results should not be read as one leaderboard.' : active.copy}</p><div className="chapter-io"><div><small>INPUT</small><b>{active.input}</b></div><span>→</span><div><small>OUTPUT</small><b>{chapter === 3 ? model.outputLabel : active.output}</b></div></div><div className="chapter-controls"><button className="text-button" onClick={() => { setChapter((chapter - 1 + chapters.length) % chapters.length); setPlaying(false) }}>← Previous</button><span>{active.id} / 04</span><button className="button primary" onClick={() => { setChapter((chapter + 1) % chapters.length); setPlaying(false) }}>Next chapter <span>→</span></button></div></div>
       </div>
     </section>
-    <section className="story-results"><div><p className="tiny-label">Evidence, not decoration</p><h2>A model is only<br /><em>one part</em> of the story.</h2><p>Performance is read alongside data quality, patient-level separation, and the operating threshold. The interface keeps those decisions visible.</p></div><div className="result-metrics"><div><strong>87.73%</strong><span>Accuracy</span></div><div><strong>92.51%</strong><span>F1 score</span></div><div><strong>0.9313</strong><span>ROC-AUC</span></div><div><strong>83.80%</strong><span>Specificity</span></div></div></section>
+    <section className="story-results"><div><p className="tiny-label">Evidence, not decoration · {model.shortName}</p><h2>A model is only<br /><em>one part</em> of the story.</h2><p>Performance is read alongside data quality, patient-level separation, and the operating threshold. {model.disclaimer}</p></div><div className="result-metrics">{model.metrics.slice(0, 4).map(metric => <div key={metric.label}><strong>{metric.value}</strong><span>{metric.label}</span></div>)}</div></section>
     <section className="story-roadmap"><div><p className="tiny-label">Where this can go next</p><h2>From prototype<br />to <em>evidence.</em></h2></div><div className="roadmap-list"><article><span>01</span><div><h3>Severity classification</h3><p>Move beyond binary screening toward clinically meaningful severity groups.</p></div></article><article><span>02</span><div><h3>Broader validation</h3><p>Test across cohorts, devices, environments, and patient populations.</p></div></article><article><span>03</span><div><h3>Clinical partnership</h3><p>Translate an academic prototype into a carefully validated research tool.</p></div></article></div></section>
     <footer className="story-disclaimer"><span>i</span><p><strong>Research communication only.</strong> This page documents an academic project and does not provide medical diagnosis or clinical advice.</p></footer>
   </main>

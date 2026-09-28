@@ -28,7 +28,7 @@ export function PreferencesPanel() {
   const updateMotion = (value: boolean) => { setReduced(value); localStorage.setItem('pulmo-reduced-motion', String(value)); document.documentElement.dataset.reducedMotion = String(value) }
 
   return <>
-    <button className="utility-button" onClick={() => setOpen(true)} aria-label="Open display preferences" title="Display preferences">Aa</button>
+    <button className="utility-button" onClick={() => setOpen(true)} aria-label="Open display preferences" title="Display preferences"><span aria-hidden="true">Aa</span><span className="utility-label">Display</span></button>
     {open && <div className="preferences-overlay" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
       <section className="preferences-panel" role="dialog" aria-modal="true" aria-labelledby="preferences-title">
         <div className="preferences-head"><div><span className="tiny-label">INTERFACE SETTINGS</span><h2 id="preferences-title">Tune your reading space</h2></div><button className="preferences-close" onClick={() => setOpen(false)} aria-label="Close preferences">×</button></div>
@@ -46,5 +46,5 @@ export function ShareButton({ label = 'Share research' }: { label?: string }) {
     const data = { title: document.title, text: 'SHWASA respiratory acoustic intelligence', url: window.location.href }
     try { if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(data.url); setCopied(true); window.setTimeout(() => setCopied(false), 1800) } } catch { /* dismissed */ }
   }
-  return <button className="share-button" onClick={share} aria-live="polite">{copied ? 'Link copied' : label} <span aria-hidden="true">↗</span></button>
+  return <button className="share-button" onClick={share} aria-live="polite"><span>{copied ? 'Link copied' : label}</span> <span aria-hidden="true">↗</span></button>
 }

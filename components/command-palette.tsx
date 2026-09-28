@@ -41,7 +41,7 @@ export function CommandPalette() {
   }
   const recentItems = recent.map(href => destinations.find(item => item.href === href)).filter(Boolean)
   return <>
-    <button className="command-trigger" onClick={() => setOpen(true)} aria-label="Open command menu"><span>Search research</span><kbd>⌘ K</kbd></button>
+    <button className="command-trigger" onClick={() => setOpen(true)} aria-label="Find a page or research topic" title="Find a page or research topic"><span className="command-label">Find</span><span className="command-detail">Search</span><kbd>⌘ K</kbd></button>
     {open && <div className="command-overlay" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
       <section className="command-dialog" role="dialog" aria-modal="true" aria-label="Search SHWASA">
         <div className="command-search"><span aria-hidden="true">⌕</span><input ref={inputRef} value={query} onChange={event => setQuery(event.target.value)} placeholder="Search routes and research…" aria-label="Search routes and research" /><button onClick={() => setOpen(false)} aria-label="Close search">Esc</button></div>

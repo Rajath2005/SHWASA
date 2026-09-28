@@ -7,6 +7,10 @@ export function Reveal({ children, className = '', delay = 0 }: { children: Reac
   useEffect(() => {
     const element = ref.current
     if (!element) return
+    if (!('IntersectionObserver' in window)) {
+      element.classList.add('is-visible')
+      return
+    }
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting) return
       element.classList.add('is-visible')

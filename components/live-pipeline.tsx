@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
 
 const stages = [
   { number: '01', title: 'Audio waveform', detail: 'raw respiratory signal', description: 'Capture breath cycles as a time-domain signal before any transformation.', kind: 'wave' },
@@ -22,16 +22,33 @@ function Evidence({ kind }: { kind: string }) {
 export function LivePipeline() {
   const [active, setActive] = useState(0)
   const [playing, setPlaying] = useState(true)
+  const [reducedMotion, setReducedMotion] = useState(false)
+  const [focused, setFocused] = useState(false)
   const timer = useRef<number | null>(null)
-  useEffect(() => { if (!playing) return; timer.current = window.setInterval(() => setActive(value => (value + 1) % stages.length), 2200); return () => { if (timer.current) window.clearInterval(timer.current) } }, [playing])
-  useEffect(() => { const handler = (event: KeyboardEvent) => { if (event.key === 'ArrowRight') setActive(value => Math.min(value + 1, stages.length - 1)); if (event.key === 'ArrowLeft') setActive(value => Math.max(value - 1, 0)); if (event.key === ' ') setPlaying(value => !value) }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler) }, [])
+  useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReducedMotion(preference.matches || document.documentElement.dataset.reducedMotion === 'true')
+    update()
+    preference.addEventListener('change', update)
+    return () => preference.removeEventListener('change', update)
+  }, [])
+  useEffect(() => {
+    if (!playing || reducedMotion || focused) return
+    timer.current = window.setInterval(() => setActive(value => (value + 1) % stages.length), 2200)
+    return () => { if (timer.current !== null) window.clearInterval(timer.current) }
+  }, [focused, playing, reducedMotion])
   const stage = stages[active]
-  return <div className="pipeline-story" aria-label="Interactive COPD classification pipeline">
-    <div className="live-pipeline" role="list">
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'ArrowRight') { event.preventDefault(); setActive(value => Math.min(value + 1, stages.length - 1)) }
+    if (event.key === 'ArrowLeft') { event.preventDefault(); setActive(value => Math.max(value - 1, 0)) }
+    if (event.key === ' ') { event.preventDefault(); setPlaying(value => !value) }
+  }
+  return <div className="pipeline-story" aria-label="Interactive COPD classification pipeline" tabIndex={0} onKeyDown={handleKeyDown} onFocus={() => setFocused(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false) }}>
+    <div className="live-pipeline" role="list" style={{ '--signal-progress': `${(active / (stages.length - 1)) * 100}` } as CSSProperties}>
       <div className="pipeline-track" aria-hidden="true"><span style={{ width: `${(active / (stages.length - 1)) * 100}%` }} /></div>
-      {stages.map((item, index) => <button key={item.title} role="listitem" className={index === active ? 'pipeline-node active' : index < active ? 'pipeline-node passed' : 'pipeline-node'} onClick={() => { setActive(index); setPlaying(false) }} aria-label={`Show ${item.title}`} aria-current={index === active ? 'step' : undefined}><span className="node-number">{item.number}</span><span className="node-dot" /><strong>{item.title}</strong><small>{item.detail}</small></button>)}
+      {stages.map((item, index) => <button key={item.title} className={index === active ? 'pipeline-node active' : index < active ? 'pipeline-node passed' : 'pipeline-node'} onClick={() => { setActive(index); setPlaying(false) }} aria-label={`Show ${item.title}`} aria-current={index === active ? 'step' : undefined}><span className="node-number">{item.number}</span><span className="node-dot" /><strong>{item.title}</strong><small>{item.detail}</small></button>)}
       <div className="pipeline-readout"><span className="tiny-label">LIVE TRANSFORM</span><strong>{stage.title}</strong><span>{stage.detail}</span><i /></div>
     </div>
-    <div className="pipeline-detail"><div><span className="tiny-label">STAGE {stage.number} / 07</span><h3>{stage.title}</h3><p>{stage.description}</p></div><Evidence kind={stage.kind} /><div className="pipeline-controls"><button className="text-button" onClick={() => setActive(value => Math.max(0, value - 1))} disabled={active === 0}>Previous</button><button className="button" onClick={() => setPlaying(value => !value)}>{playing ? 'Pause flow' : 'Resume flow'}</button><button className="text-button" onClick={() => setActive(value => Math.min(stages.length - 1, value + 1))} disabled={active === stages.length - 1}>Next</button></div></div>
+    <div className={`pipeline-detail stage-${stage.kind}`}><div><span className="tiny-label">STAGE {stage.number} / 07</span><h3>{stage.title}</h3><p>{stage.description}</p></div><Evidence kind={stage.kind} /><div className="pipeline-controls"><button className="text-button" onClick={() => setActive(value => Math.max(0, value - 1))} disabled={active === 0}>Previous</button><button className="button" onClick={() => setPlaying(value => !value)}>{playing ? 'Pause flow' : 'Resume flow'}</button><button className="text-button" onClick={() => setActive(value => Math.min(stages.length - 1, value + 1))} disabled={active === stages.length - 1}>Next</button></div></div>
   </div>
 }
