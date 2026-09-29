@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const steps = [
   { target: '[data-tour="brand"]', eyebrow: '01 / Start here', title: 'This is SHWASA', copy: 'A research workspace for making respiratory sound analysis easier to understand. The navigation keeps the project story, tools, evidence, and resources close at hand.' },
@@ -16,16 +16,21 @@ export function SiteTour() {
   const [step, setStep] = useState(0)
   const [ready, setReady] = useState(false)
   const [targetRect, setTargetRect] = useState({ top: 0, left: 0, width: 0, height: 0 })
+  const [mobile, setMobile] = useState(false)
+  const launcherRef = useRef<HTMLButtonElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.reducedMotion === 'true'
+    setMobile(window.matchMedia('(max-width: 760px)').matches)
     setReady(true)
     if (!reduced && sessionStorage.getItem('shwasa-tour-seen') !== 'true') setOpen(true)
   }, [])
 
   useEffect(() => {
     if (!open) return
-    const element = document.querySelector(steps[step].target)
+    const selector = mobile && step > 0 ? '[data-tour="mobile-navigation"]' : steps[step].target
+    const element = document.querySelector(selector)
     document.querySelectorAll('[data-tour-active]').forEach(item => item.removeAttribute('data-tour-active'))
     element?.setAttribute('data-tour-active', 'true')
     element?.scrollIntoView({ behavior: document.documentElement.dataset.reducedMotion === 'true' ? 'auto' : 'smooth', block: 'center', inline: 'center' })
@@ -41,8 +46,22 @@ export function SiteTour() {
       if (event.key === 'Escape') finish()
       if (event.key === 'ArrowRight' || event.key === 'Enter') next()
       if (event.key === 'ArrowLeft') previous()
+      if (event.key === 'Tab') {
+        const elements = Array.from(cardRef.current?.querySelectorAll<HTMLElement>('button') ?? []).filter(element => !element.hasAttribute('disabled'))
+        if (!elements.length) return
+        const first = elements[0]
+        const last = elements[elements.length - 1]
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault()
+          last.focus()
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault()
+          first.focus()
+        }
+      }
     }
     window.addEventListener('keydown', onKeyDown)
+    requestAnimationFrame(() => cardRef.current?.querySelector<HTMLButtonElement>('.button.primary')?.focus())
     return () => {
       window.removeEventListener('keydown', onKeyDown)
       window.cancelAnimationFrame(measureFrame)
@@ -51,18 +70,18 @@ export function SiteTour() {
       window.removeEventListener('scroll', measure)
       element?.removeAttribute('data-tour-active')
     }
-  }, [open, step])
+  }, [open, step, mobile])
 
-  const finish = () => { sessionStorage.setItem('shwasa-tour-seen', 'true'); setOpen(false) }
+  const finish = () => { sessionStorage.setItem('shwasa-tour-seen', 'true'); setOpen(false); requestAnimationFrame(() => launcherRef.current?.focus()) }
   const next = () => step === steps.length - 1 ? finish() : setStep(value => value + 1)
   const previous = () => setStep(value => Math.max(0, value - 1))
   if (!ready) return null
 
   return <>
-    <button className="tour-launcher" onClick={() => { setStep(0); setOpen(true) }} aria-label="Open site guide">Guide <span aria-hidden="true">?</span></button>
+    <button ref={launcherRef} className="tour-launcher" onClick={() => { setStep(0); setOpen(true) }} aria-label="Open site guide">Guide <span aria-hidden="true">?</span></button>
     {open && <div className="site-tour" role="dialog" aria-modal="true" aria-labelledby="tour-title">
       <div className="tour-spotlight" aria-hidden="true" style={{ top: targetRect.top - 8, left: targetRect.left - 8, width: targetRect.width + 16, height: targetRect.height + 16 }} />
-      <div className="tour-card">
+      <div ref={cardRef} className="tour-card">
         <div className="tour-card-top"><span className="tiny-label">{steps[step].eyebrow}</span><button className="tour-skip" onClick={finish}>Skip guide</button></div>
         <div className="tour-progress" aria-label={`Step ${step + 1} of ${steps.length}`}>{steps.map((item, index) => <i key={item.target} className={index <= step ? 'active' : ''} />)}</div>
         <h2 id="tour-title">{steps[step].title}</h2>

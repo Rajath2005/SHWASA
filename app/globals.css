@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
+.command-item.is-active { background: var(--mint); }
 
 :root { --background: #f4f5f1; --foreground: #17282b; --navy: #17282b; --teal: #3f8582; --mint: #d9e8e3; --paper: #fbfcf8; --line: #cad6d0; --muted: #6b7b78; --soft-ink:#52625e; --body-ink:#5d6e6a; --quiet-ink:#82908b; --visual-muted:#8ba5a0; --visual-grid:#67817d; --dark-line:#3a5050; --metric:#7db7aa; --status:#a65f40; --overlay:rgba(16,39,43,.28); --shadow:rgba(16,39,43,.15); --radius: .35rem; }
 @theme inline { --color-background: var(--background); --color-foreground: var(--foreground); --color-primary: var(--teal); --color-border: var(--line); --font-sans: var(--font-geist), sans-serif; --font-mono: var(--font-geist-mono), monospace; }
@@ -112,6 +113,29 @@ html,body{overflow-x:hidden}button,a,input,select{touch-action:manipulation}@med
   .research-nav,.research-nav{overscroll-behavior:contain}
   .footer-links{align-items:start}
 }
+
+@media(max-width:760px){
+  .premium-nav{position:relative;flex-wrap:wrap;row-gap:10px;padding-block:10px}
+  .premium-actions{order:3;flex:1 0 100%;width:100%;min-width:0;margin-left:0;justify-content:flex-end;gap:6px}
+  .premium-actions .command-trigger,.premium-actions .utility-button,.premium-actions .share-button{flex:0 0 38px;width:38px;min-width:38px;height:38px;min-height:38px;padding:0;font-size:0}
+  .premium-actions .command-trigger:before{font-size:16px}
+  .premium-actions .utility-button:before{font-size:10px}
+  .premium-actions .share-button:before{content:'↗';font-size:16px}
+  .premium-actions .utility-label,.premium-actions .share-button span{display:none}
+  .premium-links{top:calc(100% + 1px);left:19px;right:19px}
+}
+html[data-theme='dark'] .premium-links .nav-cta,
+html[data-theme='system'] .premium-links .nav-cta{color:#0d2023!important;background:var(--teal);border-color:var(--teal);box-shadow:none}
+@media(prefers-color-scheme:dark){html[data-theme='system'] .premium-links .nav-cta{color:#0d2023!important;background:#6dc4b5;border-color:#6dc4b5}}
+@media(max-width:760px){
+  .live-pipeline{padding-bottom:0}
+  .live-pipeline .pipeline-track{bottom:74px}
+  .live-pipeline .pipeline-readout{position:relative;left:auto;right:auto;bottom:auto;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;margin-left:-36px;margin-top:4px;padding:14px 0 0}
+  .live-pipeline .pipeline-readout .tiny-label{grid-column:1/-1}
+  .live-pipeline .pipeline-readout strong{grid-column:1;min-width:0;overflow-wrap:anywhere}
+  .live-pipeline .pipeline-readout span:not(.tiny-label){grid-column:2;align-self:center;white-space:nowrap}
+  .live-pipeline .pipeline-readout i{grid-column:3;grid-row:2;align-self:center}
+}
 @media(max-width:360px){.shell{width:calc(100% - 26px)}.hero h1{font-size:3.15rem}.brand small{display:none}.hero-notes{display:grid;grid-template-columns:1fr 1fr}.visual-card{font-size:11px}.metric-list strong{font-size:33px}.record-card{grid-template-columns:7px 1fr 16px}.record-card .thumb-wave{display:none}}
 
 /* Final narrow-screen safeguards: this block intentionally comes last so legacy page rules cannot override it. */
@@ -132,16 +156,14 @@ html,body{overflow-x:hidden}button,a,input,select{touch-action:manipulation}@med
 
 /* Premium Glassmorphism & Micro-animations added for feature plan */
 .glass-panel {
-  background: color-mix(in srgb, var(--paper) 70%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--paper);
   border: 1px solid color-mix(in srgb, var(--line) 50%, transparent);
-  box-shadow: 0 8px 32px 0 var(--shadow);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px var(--shadow);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .glass-panel:hover {
-  background: color-mix(in srgb, var(--paper) 80%, transparent);
-  box-shadow: 0 12px 48px 0 var(--shadow), 0 0 0 1px var(--teal) inset;
+  background: color-mix(in srgb, var(--paper) 94%, var(--mint));
+  box-shadow: 0 6px 18px var(--shadow);
 }
 .premium-gradient {
   background: linear-gradient(135deg, var(--teal) 0%, var(--metric) 100%);
